@@ -34,6 +34,56 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+
+  <!-- Loader overlay -->
+<style>
+  .loading-overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0f172a;color:#fff;z-index:9999}
+  .loading-overlay .brand{font:600 20px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;opacity:.9;letter-spacing:.2px}
+  .loading-overlay .bar{width:min(420px,70vw);height:8px;background:rgba(255,255,255,.18);border-radius:9999px;overflow:hidden;margin-top:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+  .loading-overlay .peg{height:100%;width:0%;background:#22d3ee;transition:width .18s ease}
+  .loading-overlay .hint{margin-top:10px;font:500 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;opacity:.6}
+  .loading-overlay.fade{opacity:0;transition:opacity .28s ease}
+</style>
+
+<div id="app-loader" class="loading-overlay" role="status" aria-live="polite">
+  <div class="brand">Spin Wheel</div>
+  <div class="bar"><div class="peg"></div></div>
+  <div class="hint">Loading…</div>
+</div>
+
+<script>
+  (function () {
+    const root = document.getElementById('app-loader');
+    const peg  = root.querySelector('.peg');
+    let p = 0;
+    // gentle fake progress up to 90%
+    const tick = setInterval(() => {
+      p = Math.min(90, p + Math.max(1, 6 - Math.random()*4));
+      peg.style.width = p + '%';
+    }, 120);
+
+    // Flutter fires this when the first frame is rendered
+    window.addEventListener('flutter-first-frame', () => {
+      clearInterval(tick);
+      peg.style.width = '100%';
+      root.classList.add('fade');
+      setTimeout(() => root.remove(), 320);
+    });
+
+    // Safety: if something blocks first frame, hide after 8s post-load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (document.getElementById('app-loader')) {
+          clearInterval(tick);
+          peg.style.width = '100%';
+          root.classList.add('fade');
+          setTimeout(() => root.remove(), 320);
+        }
+      }, 8000);
+    });
+  })();
+</script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
